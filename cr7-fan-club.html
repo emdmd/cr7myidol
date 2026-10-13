@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CR7 Fan Club Việt Nam</title>
+
+  <!-- Font chữ từ Google Fonts (cần internet). Nếu mất mạng sẽ dùng font dự phòng -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============ 1. BIẾN MÀU - đổi màu cả trang tại đây ============ */
+    :root {
+      --do: #b3131b;        /* đỏ Bồ Đào Nha */
+      --xanh-la: #0c3b2c;   /* xanh lá đậm */
+      --vang: #f4b400;      /* vàng (Al Nassr) */
+      --nen: #0e1512;       /* nền tối */
+      --nen-2: #16211c;
+      --chu: #f3efe6;       /* màu chữ */
+      --chu-mo: #a9b3ac;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Be Vietnam Pro", Arial, sans-serif;
+      background: var(--nen);
+      color: var(--chu);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3 { font-family: "Oswald", Impact, sans-serif; letter-spacing: 0.5px; line-height: 1.1; }
+    section { padding: 90px 6vw; }
+    .tieu-de { font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 12px; }
+    .mo-ta { color: var(--chu-mo); max-width: 60ch; margin-bottom: 40px; }
+
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, .the-tv:focus-visible {
+      outline: 3px solid var(--vang); outline-offset: 3px;
+    }
+
+    /* ============ 2. MÀN HÌNH CHỜ (loader) ============ */
+    #loader {
+      position: fixed; inset: 0; z-index: 200; background: var(--nen);
+      display: grid; place-items: center; align-content: center; gap: 24px;
+      transition: opacity 0.7s, visibility 0.7s;
+      animation: an-loader 0.6s 3s forwards;      /* dự phòng: tự tắt sau 3 giây nếu JS lỗi */
+    }
+    #loader.xong { opacity: 0; visibility: hidden; }
+    @keyframes an-loader { to { opacity: 0; visibility: hidden; } }
+    #loader .so-chay {
+      position: relative; font-family: "Oswald", sans-serif; font-weight: 700;
+      font-size: 11rem; line-height: 1; color: transparent;
+      -webkit-text-stroke: 2px var(--vang);
+    }
+    /* Lớp chữ vàng "đổ đầy" từ dưới lên */
+    #loader .so-chay::after {
+      content: "7"; position: absolute; left: 0; bottom: 0; width: 100%; height: 0;
+      overflow: hidden; display: flex; align-items: flex-end;
+      color: var(--vang); -webkit-text-stroke: 0;
+      animation: do-day 1.6s ease-out forwards;
+    }
+    @keyframes do-day { to { height: 100%; } }
+    #loader p { color: var(--chu-mo); letter-spacing: 3px; }
+
+    /* ============ 3. THANH TIẾN ĐỘ CUỘN + ÁNH SÁNG CHUỘT ============ */
+    #tien-do {
+      position: fixed; top: 0; left: 0; width: 100%; height: 4px; z-index: 60;
+      background: linear-gradient(90deg, var(--do), var(--vang));
+      transform: scaleX(0); transform-origin: left;
+    }
+    #sang {
+      position: fixed; top: 0; left: 0; width: 360px; height: 360px; z-index: 30;
+      border-radius: 50%; pointer-events: none;
+      background: radial-gradient(circle, rgba(244, 180, 0, 0.14), transparent 65%);
+      transform: translate(-400px, -400px);
+    }
+    @media (hover: none) { #sang { display: none; } }
+
+    /* Canvas pháo hoa giấy (confetti) phủ cả màn hình */
+    #hoa { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 150; pointer-events: none; }
+
+    /* ============ 4. THANH MENU ============ */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 6vw; transition: background 0.3s, padding 0.3s;
+    }
+    header.cuon { background: rgba(14, 21, 18, 0.92); padding: 10px 6vw; backdrop-filter: blur(6px); }
+    .logo { font-family: "Oswald", sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--chu); text-decoration: none; }
+    .logo span { color: var(--do); }
+    nav a { color: var(--chu); text-decoration: none; margin-left: 20px; font-weight: 500; font-size: 0.92rem; position: relative; }
+    nav a::after {
+      content: ""; position: absolute; left: 0; bottom: -4px;
+      width: 0; height: 2px; background: var(--vang); transition: width 0.3s;
+    }
+    nav a:hover::after { width: 100%; }
+    .nut-menu { display: none; background: none; border: 0; color: var(--chu); font-size: 1.8rem; cursor: pointer; }
+
+    /* ============ 5. HERO ============ */
+    .hero {
+      min-height: 100vh; display: grid; align-items: center; position: relative; overflow: hidden;
+      background:
+        radial-gradient(circle at 75% 40%, rgba(179, 19, 27, 0.55), transparent 55%),
+        radial-gradient(circle at 15% 90%, rgba(12, 59, 44, 0.9), transparent 55%),
+        var(--nen);
+    }
+    #hat { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+    /* Hai lớp trang trí di chuyển theo chuột (hiệu ứng parallax) */
+    .tang { position: absolute; inset: 0; pointer-events: none; transition: transform 0.2s ease-out; }
+    .tang-7 { transform: translate3d(var(--px, 0px), var(--py, 0px), 0); }
+    .tang-vong { transform: translate3d(var(--px, 0px), var(--py, 0px), 0); }
+    .vong {
+      position: absolute; right: 6vw; top: 50%; width: min(70vw, 620px); aspect-ratio: 1;
+      margin-top: calc(min(70vw, 620px) / -2);
+      border: 2px dashed rgba(244, 180, 0, 0.3); border-radius: 50%;
+      animation: quay 40s linear infinite;
+    }
+    .vong::after {
+      content: ""; position: absolute; inset: 12%; border-radius: 50%;
+      border: 2px solid rgba(179, 19, 27, 0.5);
+    }
+    @keyframes quay { to { transform: rotate(360deg); } }
+
+    .so-7 {
+      position: absolute; right: 4vw; top: 50%;
+      font-family: "Oswald", sans-serif; font-weight: 700;
+      font-size: clamp(18rem, 48vw, 46rem); line-height: 1;
+      color: transparent; -webkit-text-stroke: 3px rgba(244, 180, 0, 0.5);
+      transform: translateY(-50%); animation: troi 6s ease-in-out infinite;
+      user-select: none;
+    }
+    @keyframes troi { 0%, 100% { transform: translateY(-50%); } 50% { transform: translateY(-56%); } }
+
+    .hero-noi-dung { position: relative; z-index: 2; max-width: 680px; padding-top: 60px; padding-bottom: 80px; }
+    .hero h1 { font-size: clamp(3rem, 9vw, 6.5rem); }
+    /* Chữ RONALDO có vệt sáng chạy ngang */
+    .hero h1 em {
+      font-style: normal; color: transparent;
+      background: linear-gradient(100deg, var(--do) 20%, var(--vang) 45%, #fff 50%, var(--vang) 55%, var(--do) 80%);
+      background-size: 250% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      animation: vet-sang 4s linear infinite;
+    }
+    @keyframes vet-sang { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+    .go-chu { min-height: 2em; margin: 18px 0 30px; font-size: 1.2rem; color: var(--vang); }
+    .go-chu::after { content: "|"; animation: nhap-nhay 0.8s steps(1) infinite; }
+    @keyframes nhap-nhay { 50% { opacity: 0; } }
+
+    .nut {
+      display: inline-block; padding: 14px 30px; border-radius: 999px;
+      background: var(--do); color: #fff; font-weight: 700; text-decoration: none;
+      border: 2px solid var(--do); cursor: pointer; font-size: 1rem; font-family: inherit;
+      transition: transform 0.2s, background 0.2s, color 0.2s;
+    }
+    .nut:hover { transform: translateY(-3px) scale(1.04); background: transparent; color: var(--vang); border-color: var(--vang); }
+    .nut-vien { background: transparent; border-color: var(--chu); margin-left: 12px; }
+
+    /* Dải chữ chạy ngang cuối hero */
+    .bang-chay {
+      position: absolute; left: -2vw; right: -2vw; bottom: 26px; z-index: 3;
+      background: var(--vang); color: var(--nen); overflow: hidden; transform: rotate(-1.5deg);
+      font-family: "Oswald", sans-serif; font-size: 1.3rem; padding: 8px 0;
+    }
+    .bang-chay div { display: flex; width: max-content; animation: chay 30s linear infinite; }
+    .bang-chay span { white-space: pre; padding-right: 0; }
+    @keyframes chay { to { transform: translateX(-50%); } }
+
+    /* ============ 6. SỐ LIỆU ============ */
+    .so-lieu { background: var(--nen-2); display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 30px; text-align: center; }
+    .so-lieu strong { display: block; font-family: "Oswald", sans-serif; font-size: clamp(2.8rem, 6vw, 4.5rem); color: var(--vang); }
+    .so-lieu span { color: var(--chu-mo); }
+
+    /* ============ 7. KHUNG ẢNH DÙNG CHUNG ============ */
+    .khung-anh {
+      position: relative; overflow: hidden; border-radius: 14px;
+      background: linear-gradient(135deg, var(--xanh-la), var(--do));
+      aspect-ratio: 4 / 3; cursor: pointer;
+    }
+    .khung-anh img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s; }
+    .khung-anh:hover img { transform: scale(1.12); }
+    .khung-anh figcaption {
+      position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 16px 14px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+      transform: translateY(100%); transition: transform 0.35s;
+    }
+    .khung-anh:hover figcaption { transform: translateY(0); }
+    .khung-anh.thieu::before {
+      content: attr(data-ten); position: absolute; inset: 0;
+      display: grid; place-items: center; text-align: center; padding: 10px;
+      font-size: 0.85rem; color: rgba(255, 255, 255, 0.8);
+    }
+    .khung-anh.thieu img { display: none; }
+
+    /* ============ 8. TIỂU SỬ ============ */
+    .tieu-su { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
+    .tieu-su .khung-anh { aspect-ratio: 3 / 4; }
+    .tieu-su p { margin-bottom: 16px; color: var(--chu-mo); }
+
+    /* ============ 9. DÒNG THỜI GIAN ============ */
+    .moc-thoi-gian { position: relative; max-width: 800px; margin: 0 auto; padding-left: 36px; border-left: 3px solid var(--do); }
+    .moc { position: relative; margin-bottom: 40px; }
+    .moc::before {
+      content: ""; position: absolute; left: -46px; top: 6px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--vang); border: 3px solid var(--nen-2);
+    }
+    .moc h3 { font-size: 1.5rem; }
+    .moc small { color: var(--vang); font-weight: 700; }
+    .moc p { color: var(--chu-mo); }
+
+    /* ============ 10. HỒ SƠ TỪNG CLB (tab) ============ */
+    .tab-nut { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+    .tab-nut button {
+      padding: 10px 22px; border-radius: 999px; border: 2px solid rgba(255, 255, 255, 0.22);
+      background: transparent; color: var(--chu); font: inherit; font-weight: 700; cursor: pointer;
+      transition: background 0.25s, border-color 0.25s, transform 0.2s;
+    }
+    .tab-nut button:hover { transform: translateY(-2px); border-color: var(--vang); }
+    .tab-nut button[aria-selected="true"] { background: var(--mau-tab, var(--vang)); border-color: var(--mau-tab, var(--vang)); color: #111; }
+    .tab-noi-dung { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+    .tab-noi-dung.doi { animation: hien 0.5s; }
+    .tab-noi-dung .khung-anh { aspect-ratio: 4 / 3; cursor: default; }
+    .tab-noi-dung .khung-anh:hover img { transform: none; }
+    .tab-noi-dung h3 { font-size: 2.2rem; }
+    .nam-clb { color: var(--vang); font-weight: 700; margin: 4px 0 14px; }
+    .tab-noi-dung p { color: var(--chu-mo); margin-bottom: 12px; }
+    .cot { margin-bottom: 14px; }
+    .cot-tren { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--chu-mo); margin-bottom: 4px; }
+    .cot-tren b { color: var(--chu); }
+    .cot-nen { height: 10px; background: rgba(255, 255, 255, 0.1); border-radius: 99px; overflow: hidden; }
+    .cot-nen i {
+      display: block; height: 100%; width: 0; border-radius: 99px;
+      background: linear-gradient(90deg, var(--do), var(--vang));
+      transition: width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    /* ============ 11. KHOẢNH KHẮC HUYỀN THOẠI (kéo ngang) ============ */
+    .bang-khoanh-khac {
+      display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory;
+      padding: 10px 6vw 30px; margin: 0 -6vw; cursor: grab;
+      scrollbar-width: thin; scrollbar-color: var(--do) transparent;
+    }
+    .bang-khoanh-khac.keo { cursor: grabbing; scroll-snap-type: none; }
+    .khoanh-khac {
+      flex: 0 0 min(78vw, 340px); scroll-snap-align: center; user-select: none;
+      background: var(--nen-2); border-radius: 18px; padding: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .khoanh-khac:hover { transform: translateY(-10px); border-color: var(--vang); box-shadow: 0 18px 34px rgba(244, 180, 0, 0.18); }
+    .khoanh-khac .nam {
+      display: block; font-family: "Oswald", sans-serif; font-size: 4.5rem; line-height: 1;
+      color: transparent; -webkit-text-stroke: 2px var(--vang); margin-bottom: 10px;
+    }
+    .khoanh-khac h3 { font-size: 1.4rem; margin-bottom: 8px; }
+    .khoanh-khac p { color: var(--chu-mo); font-size: 0.95rem; }
+
+    /* ============ 12. THƯ VIỆN ẢNH + LIGHTBOX ============ */
+    .luoi-anh { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+    .lightbox {
+      position: fixed; inset: 0; z-index: 100; display: none;
+      background: rgba(0, 0, 0, 0.93); place-items: center; padding: 20px;
+    }
+    .lightbox.mo { display: grid; }
+    .lightbox img { max-width: 88vw; max-height: 78vh; border-radius: 10px; animation: hien 0.3s; }
+    .lightbox p { text-align: center; margin-top: 12px; }
+    .lightbox button {
+      position: absolute; background: none; border: 0; color: #fff; cursor: pointer;
+      font-size: 2.6rem; padding: 10px 16px; transition: color 0.2s, transform 0.2s;
+    }
+    .lightbox button:hover { color: var(--vang); transform: scale(1.15); }
+    .lb-dong { top: 14px; right: 18px; }
+    .lb-truoc { left: 8px; top: 50%; margin-top: -30px; }
+    .lb-sau { right: 8px; top: 50%; margin-top: -30px; }
+    @keyframes hien { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
+
+    /* ============ 13. DANH HIỆU ============ */
+    .luoi-danh-hieu { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .the {
+      background: var(--nen-2); padding: 28px; border-radius: 14px; border-top: 4px solid var(--vang);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .the:hover { transform: translateY(-8px) rotate(-1deg); box-shadow: 0 16px 30px rgba(179, 19, 27, 0.35); }
+    .the h3 { margin-bottom: 8px; }
+    .the p { color: var(--chu-mo); font-size: 0.95rem; }
+
+    /* ============ 14. BẢNG VÀNG THÀNH VIÊN ============ */
+    .thong-ke-tv { display: flex; flex-wrap: wrap; gap: 36px; margin-bottom: 30px; }
+    .thong-ke-tv strong { font-family: "Oswald", sans-serif; font-size: 3rem; color: var(--vang); display: block; line-height: 1; }
+    .thong-ke-tv span { color: var(--chu-mo); font-size: 0.9rem; }
+    .luoi-tv { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 22px; perspective: 1000px; }
+
+    .the-tv {
+      --mau: #999; height: 310px; position: relative; cursor: pointer;
+      transform-style: preserve-3d; transition: transform 0.15s ease-out;
+      animation: vao 0.6s var(--d, 0s) backwards;
+    }
+    /* Dùng thuộc tính translate (không phải transform) để không đè lên hiệu ứng nghiêng */
+    @keyframes vao { from { opacity: 0; translate: 0 36px; } }
+    .ben-trong { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.7s; }
+    .the-tv.lat .ben-trong { transform: rotateY(180deg); }
+    .mat {
+      position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      border-radius: 18px; padding: 20px; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      background: linear-gradient(160deg, var(--nen-2), #0a100d); border: 2px solid var(--mau);
+    }
+    .mat-truoc::after {                     /* vệt sáng đi theo chuột */
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(circle at var(--sx, 50%) var(--sy, 0%), rgba(255, 255, 255, 0.2), transparent 55%);
+    }
+    .mat-sau { transform: rotateY(180deg); justify-content: center; }
+    .so-tv { position: absolute; top: 14px; left: 16px; font-family: "Oswald", sans-serif; color: var(--chu-mo); font-size: 0.9rem; }
+    .huy-hieu { font-size: 0.78rem; font-weight: 700; padding: 4px 14px; border-radius: 99px; background: var(--mau); color: #111; }
+    .anh-dai-dien {
+      width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; margin: 16px 0 10px;
+      font-family: "Oswald", sans-serif; font-size: 2rem; color: #111;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--mau));
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08), 0 0 26px var(--mau);
+    }
+    .mat h3 { font-size: 1.3rem; }
+    .biet-danh { color: var(--mau); font-weight: 700; font-size: 0.9rem; }
+    .nam-tv { color: var(--chu-mo); font-size: 0.85rem; margin: 6px 0 12px; }
+    .mat .cot { width: 100%; margin-top: auto; }
+    .mat-sau h4 { color: var(--vang); margin-bottom: 10px; }
+    .mat-sau p { color: var(--chu); font-style: italic; }
+    .mat-sau small { color: var(--chu-mo); margin-top: 16px; }
+
+    /* ============ 15. ĐỐ VUI ============ */
+    .quiz { max-width: 720px; margin: 0 auto; background: var(--nen-2); border-radius: 18px; padding: 32px; }
+    .quiz-dem { color: var(--vang); font-weight: 700; margin-bottom: 8px; }
+    .quiz h3 { font-size: 1.7rem; margin-bottom: 20px; }
+    .dap-an {
+      display: block; width: 100%; text-align: left; margin-bottom: 10px; padding: 14px 18px;
+      border-radius: 12px; border: 2px solid rgba(255, 255, 255, 0.15); background: transparent;
+      color: var(--chu); font: inherit; cursor: pointer; transition: transform 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .dap-an:hover:not(:disabled) { transform: translateX(8px); border-color: var(--vang); }
+    .dap-an.dung { background: #1f8a5b; border-color: #1f8a5b; }
+    .dap-an.sai { background: #a31620; border-color: #a31620; animation: lac 0.4s; }
+    @keyframes lac { 25% { translate: -8px 0; } 75% { translate: 8px 0; } }
+    .giai-thich { min-height: 1.6em; margin: 12px 0 18px; color: var(--chu-mo); }
+    .quiz .ket-qua { text-align: center; }
+    .quiz .ket-qua strong { display: block; font-family: "Oswald", sans-serif; font-size: 5rem; color: var(--vang); line-height: 1; }
+
+    /* ============ 16. ĐĂNG KÝ + THẺ THÀNH VIÊN ============ */
+    .dang-ky { background: var(--nen-2); text-align: center; }
+    .dang-ky form { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 24px 0; }
+    .dang-ky input, .dang-ky select {
+      padding: 14px 20px; border-radius: 999px; border: 2px solid transparent;
+      min-width: 220px; font-size: 1rem; font-family: inherit;
+    }
+    .thong-bao { min-height: 1.6em; color: var(--vang); font-weight: 700; }
+
+    .the-vip {
+      --mau: #b3131b; display: none; position: relative; overflow: hidden; text-align: left;
+      width: min(100%, 380px); aspect-ratio: 1.6; margin: 26px auto 0; padding: 22px;
+      border-radius: 18px; box-shadow: 0 22px 44px rgba(0, 0, 0, 0.55);
+      background: linear-gradient(135deg, var(--mau), #0c3b2c 85%);
+      transition: transform 0.15s ease-out;
+    }
+    .the-vip.hien-the { display: block; animation: lat-vao 0.8s backwards; }
+    @keyframes lat-vao { from { opacity: 0; scale: 0.6; rotate: -8deg; } }
+    .the-vip::before {                       /* vệt sáng quét qua thẻ */
+      content: ""; position: absolute; inset: -50%; pointer-events: none;
+      background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%);
+      animation: quet 3.5s ease-in-out infinite;
+    }
+    @keyframes quet { from { transform: translateX(-60%); } to { transform: translateX(60%); } }
+    .the-vip > * { position: relative; }
+    .the-vip .logo-the { font-family: "Oswald", sans-serif; font-size: 1.1rem; color: #fff; }
+    .the-vip .ten-the { font-family: "Oswald", sans-serif; font-size: 2rem; color: #fff; margin-top: 16px; line-height: 1.1; }
+    .the-vip .hang-the { display: inline-block; margin-top: 8px; padding: 3px 12px; border-radius: 99px; background: rgba(0, 0, 0, 0.45); color: var(--vang); font-weight: 700; font-size: 0.85rem; }
+    .the-vip .chan-the { position: absolute; left: 22px; right: 22px; bottom: 16px; display: flex; justify-content: space-between; color: rgba(255, 255, 255, 0.85); font-size: 0.85rem; }
+
+    footer { text-align: center; padding: 30px 6vw 90px; color: var(--chu-mo); font-size: 0.9rem; }
+
+    /* ============ 17. NÚT NỔI + HIỆU ỨNG SIUUU ============ */
+    #len-dau, #siuu { position: fixed; bottom: 20px; z-index: 40; border: 0; cursor: pointer; font-family: inherit; }
+    #len-dau {
+      right: 20px; width: 48px; height: 48px; border-radius: 50%; background: var(--do); color: #fff; font-size: 1.4rem;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    #len-dau.hien { opacity: 1; pointer-events: auto; }
+    #siuu {
+      left: 20px; padding: 12px 22px; border-radius: 999px; background: var(--vang); color: #111;
+      font-family: "Oswald", sans-serif; font-size: 1.1rem; font-weight: 700;
+      box-shadow: 0 0 0 0 rgba(244, 180, 0, 0.6); animation: xung 2.4s infinite;
+      transition: transform 0.2s;
+    }
+    #siuu:hover { transform: scale(1.1) rotate(-3deg); }
+    @keyframes xung { 70% { box-shadow: 0 0 0 16px rgba(244, 180, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 180, 0, 0); } }
+    #chu-siuu {
+      position: fixed; inset: 0; z-index: 160; display: grid; place-items: center; pointer-events: none; opacity: 0;
+      font-family: "Oswald", sans-serif; font-weight: 700; font-size: clamp(5rem, 22vw, 16rem);
+      color: var(--vang); -webkit-text-stroke: 3px var(--do);
+    }
+    #chu-siuu.no { animation: no-chu 0.9s; }
+    @keyframes no-chu { 0% { opacity: 0; scale: 0.4; } 30% { opacity: 1; scale: 1.1; } 100% { opacity: 0; scale: 1.7; } }
+    #noi-dung.rung { animation: rung 0.5s; }
+    @keyframes rung { 0%, 100% { translate: 0 0; } 20% { translate: -8px 4px; } 40% { translate: 8px -4px; } 60% { translate: -6px -3px; } 80% { translate: 5px 3px; } }
+
+    /* ============ 18. HIỆN DẦN KHI CUỘN ============ */
+    .an, .an-trai, .an-phai { opacity: 0; transition: opacity 0.8s, transform 0.8s; }
+    .an { transform: translateY(40px); }
+    .an-trai { transform: translateX(-70px); }
+    .an-phai { transform: translateX(70px); }
+    .hien-ra { opacity: 1 !important; transform: none !important; }
+
+    /* ============ 19. ĐIỆN THOẠI ============ */
+    @media (max-width: 1000px) {
+      .nut-menu { display: block; }
+      nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: var(--nen);
+        display: none; flex-direction: column; padding: 10px 6vw 20px;
+      }
+      nav.mo { display: flex; }
+      nav a { margin: 12px 0 0; }
+    }
+    @media (max-width: 760px) {
+      .tieu-su, .tab-noi-dung { grid-template-columns: 1fr; }
+      .so-7 { opacity: 0.5; }
+      #loader .so-chay { font-size: 8rem; }
+    }
+
+    /* Người dùng tắt chuyển động trong hệ thống thì tắt hiệu ứng */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      #loader { display: none; }
+      .an, .an-trai, .an-phai { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Màn hình chờ -->
+  <div id="loader" aria-hidden="true">
+    <div class="so-chay">7</div>
+    <p>CR7 FAN CLUB</p>
+  </div>
+
+  <div id="tien-do"></div>
+  <div id="sang"></div>
+  <canvas id="hoa"></canvas>
+  <div id="chu-siuu" aria-hidden="true">SIUUU!</div>
+
+  <!-- ===== MENU ===== -->
+  <header id="menu">
+    <a class="logo" href="#dau-trang">CR<span>7</span> FAN CLUB</a>
+    <button class="nut-menu" id="nut-menu" aria-label="Mở menu">☰</button>
+    <nav id="dieu-huong">
+      <a href="#tieu-su">Tiểu sử</a>
+      <a href="#su-nghiep">Sự nghiệp</a>
+      <a href="#khoanh-khac">Khoảnh khắc</a>
+      <a href="#thu-vien">Ảnh</a>
+      <a href="#thanh-vien">Thành viên</a>
+      <a href="#do-vui">Đố vui</a>
+      <a href="#tham-gia">Tham gia</a>
+    </nav>
+  </header>
+
+  <main id="noi-dung">
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="dau-trang">
+      <canvas id="hat"></canvas>
+      <div class="tang tang-vong" id="tang-vong" aria-hidden="true"><div class="vong"></div></div>
+      <div class="tang tang-7" id="tang-7" aria-hidden="true"><div class="so-7">7</div></div>
+
+      <div class="hero-noi-dung">
+        <h1>CÂU LẠC BỘ<br>FAN <em>RONALDO</em></h1>
+        <p class="go-chu" id="go-chu"></p>
+        <a class="nut" href="#tham-gia">Tham gia ngay</a>
+        <a class="nut nut-vien" href="#thanh-vien">Bảng vàng thành viên</a>
+      </div>
+
+      <div class="bang-chay" aria-hidden="true">
+        <div>
+          <span>SIUUU  ✦  CR7  ✦  5 QUẢ BÓNG VÀNG  ✦  900+ BÀN THẮNG  ✦  BỒ ĐÀO NHA  ✦  SIUUU  ✦  CR7  ✦  5 QUẢ BÓNG VÀNG  ✦  900+ BÀN THẮNG  ✦  BỒ ĐÀO NHA  ✦  </span>
+          <span>SIUUU  ✦  CR7  ✦  5 QUẢ BÓNG VÀNG  ✦  900+ BÀN THẮNG  ✦  BỒ ĐÀO NHA  ✦  SIUUU  ✦  CR7  ✦  5 QUẢ BÓNG VÀNG  ✦  900+ BÀN THẮNG  ✦  BỒ ĐÀO NHA  ✦  </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SỐ LIỆU ===== -->
+    <section class="so-lieu">
+      <div class="an"><strong data-dich="5">0</strong><span>Quả bóng vàng</span></div>
+      <div class="an"><strong data-dich="5">0</strong><span>Chức vô địch Champions League</span></div>
+      <div class="an"><strong data-dich="900" data-hau-to="+">0</strong><span>Bàn thắng chính thức</span></div>
+      <div class="an"><strong data-dich="140" data-hau-to="+">0</strong><span>Bàn cho đội tuyển Bồ Đào Nha</span></div>
+    </section>
+
+    <!-- ===== TIỂU SỬ ===== -->
+    <section id="tieu-su">
+      <div class="tieu-su">
+        <figure class="khung-anh an-trai" data-ten="Thêm ảnh: images/ronaldo-chan-dung.jpg">
+          <img src="images/ronaldo-chan-dung.jpg" alt="Chân dung Cristiano Ronaldo" style="object-position: 50% 25%;">
+        </figure>
+        <div class="an-phai">
+          <h2 class="tieu-de">Cristiano Ronaldo</h2>
+          <p>Cristiano Ronaldo dos Santos Aveiro sinh ngày 5/2/1985 tại Funchal, đảo Madeira (Bồ Đào Nha). Anh lớn lên trong một gia đình không khá giả và bắt đầu đá bóng từ rất nhỏ.</p>
+          <p>Từ cậu bé ở Madeira, anh trở thành một trong những cầu thủ vĩ đại nhất lịch sử nhờ tinh thần luyện tập khắt khe, thể lực phi thường và khả năng ghi bàn bằng mọi cách: chân trái, chân phải, đánh đầu, đá phạt.</p>
+          <p>Trang web này do các fan lập ra để chia sẻ ảnh, kỷ lục và tình yêu dành cho CR7.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== DÒNG THỜI GIAN ===== -->
+    <section id="hanh-trinh" style="background: var(--nen-2);">
+      <h2 class="tieu-de an" style="text-align:center;">Hành trình sự nghiệp</h2>
+      <p class="mo-ta an" style="margin-left:auto; margin-right:auto; text-align:center;">Những câu lạc bộ mà Ronaldo đã khoác áo.</p>
+      <div class="moc-thoi-gian">
+        <div class="moc an-phai"><small>2002 – 2003</small><h3>Sporting CP</h3><p>Bước ra từ học viện trẻ và ra mắt đội một ở tuổi 17.</p></div>
+        <div class="moc an-phai"><small>2003 – 2009, 2021 – 2022</small><h3>Manchester United</h3><p>Trở thành ngôi sao thế giới, giành Quả bóng vàng đầu tiên năm 2008.</p></div>
+        <div class="moc an-phai"><small>2009 – 2018</small><h3>Real Madrid</h3><p>Ghi hơn 450 bàn và giành 4 chức vô địch Champions League trong giai đoạn này.</p></div>
+        <div class="moc an-phai"><small>2018 – 2021</small><h3>Juventus</h3><p>Chinh phục Serie A và tiếp tục ghi bàn đều đặn.</p></div>
+        <div class="moc an-phai"><small>2023 – nay</small><h3>Al Nassr</h3><p>Thử thách mới ở Saudi Arabia, vẫn giữ phong độ và khát khao ghi bàn.</p></div>
+      </div>
+    </section>
+
+    <!-- ===== HỒ SƠ TỪNG CLB (tab) ===== -->
+    <section id="su-nghiep">
+      <h2 class="tieu-de an">Hồ sơ từng câu lạc bộ</h2>
+      <p class="mo-ta an">Bấm vào từng đội để xem thành tích và số liệu.</p>
+      <div class="tab-nut" id="tab-nut" role="tablist"></div>
+      <div class="tab-noi-dung" id="tab-noi-dung">
+        <figure class="khung-anh" id="tab-khung" data-ten="Thêm ảnh vào thư mục images">
+          <img id="tab-anh" src="" alt="">
+        </figure>
+        <div>
+          <h3 id="tab-ten"></h3>
+          <p class="nam-clb" id="tab-nam"></p>
+          <p id="tab-mota"></p>
+          <p id="tab-danh-hieu"></p>
+          <div id="tab-so"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== KHOẢNH KHẮC HUYỀN THOẠI ===== -->
+    <section id="khoanh-khac" style="background: var(--nen-2);">
+      <h2 class="tieu-de an">Khoảnh khắc huyền thoại</h2>
+      <p class="mo-ta an">Kéo ngang để xem thêm.</p>
+      <div class="bang-khoanh-khac" id="bang-khoanh-khac">
+        <article class="khoanh-khac"><span class="nam">2008</span><h3>Đêm Moscow</h3><p>Cùng Manchester United vô địch Champions League sau trận chung kết với Chelsea, và ghi 42 bàn trong mùa giải để giành Quả bóng vàng đầu tiên.</p></article>
+        <article class="khoanh-khac"><span class="nam">2014</span><h3>La Décima</h3><p>Real Madrid thắng 4-1 Atlético Madrid ở chung kết tại Lisbon, Ronaldo ghi bàn ở hiệp phụ và giúp đội có chức vô địch thứ 10.</p></article>
+        <article class="khoanh-khac"><span class="nam">2016</span><h3>Vô địch EURO</h3><p>Bồ Đào Nha thắng Pháp 1-0 sau hiệp phụ. Ronaldo chấn thương sớm nhưng vẫn đứng ngoài đường biên cổ vũ đồng đội.</p></article>
+        <article class="khoanh-khac"><span class="nam">2018</span><h3>Cú xe đạp chổng ngược</h3><p>Ở Champions League, anh ghi bàn bằng cú volley ngược người vào lưới Juventus tại Turin và nhận cả tràng vỗ tay từ khán giả đội chủ nhà.</p></article>
+        <article class="khoanh-khac"><span class="nam">2018</span><h3>Hat-trick World Cup</h3><p>Ghi cả 3 bàn trong trận hòa 3-3 với Tây Ban Nha, trong đó có một quả đá phạt trực tiếp ở phút cuối.</p></article>
+        <article class="khoanh-khac"><span class="nam">2024</span><h3>Bàn thắng thứ 900</h3><p>Ghi bàn thứ 900 trong sự nghiệp trong trận gặp Croatia ở UEFA Nations League.</p></article>
+      </div>
+    </section>
+
+    <!-- ===== THƯ VIỆN ẢNH ===== -->
+    <section id="thu-vien">
+      <h2 class="tieu-de an">Thư viện ảnh</h2>
+      <p class="mo-ta an">Bấm vào ảnh để xem phóng to, dùng phím mũi tên hoặc nút ‹ › để chuyển ảnh.</p>
+      <div class="luoi-anh" id="luoi-anh">
+        <figure class="khung-anh an" data-id="anh1" data-ten="Thêm ảnh: images/anh1.jpg"><img src="images/anh1.jpg" alt="Ronaldo trong màu áo Manchester United" style="object-position: 50% 30%;"><figcaption>Manchester United</figcaption></figure>
+        <figure class="khung-anh an" data-id="anh2" data-ten="Thêm ảnh: images/anh2.jpg"><img src="images/anh2.jpg" alt="Ronaldo trong màu áo Real Madrid" style="object-position: 50% 40%;"><figcaption>Những năm tháng ở Real Madrid</figcaption></figure>
+        <figure class="khung-anh an" data-id="anh3" data-ten="Thêm ảnh: images/anh3.jpg"><img src="images/anh3.jpg" alt="Ronaldo trong màu áo Juventus" style="object-position: 50% 18%;"><figcaption>Juventus</figcaption></figure>
+        <figure class="khung-anh an" data-id="anh4" data-ten="Thêm ảnh: images/anh4.jpg"><img src="images/anh4.jpg" alt="Ronaldo ăn mừng trong màu áo Al Nassr" style="object-position: 50% 25%;"><figcaption>Al Nassr</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ===== DANH HIỆU ===== -->
+    <section id="danh-hieu" style="background: var(--nen-2);">
+      <h2 class="tieu-de an">Danh hiệu nổi bật</h2>
+      <p class="mo-ta an">Một vài cột mốc làm nên tên tuổi CR7.</p>
+      <div class="luoi-danh-hieu">
+        <div class="the an"><h3>Quả bóng vàng</h3><p>5 lần: 2008, 2013, 2014, 2016, 2017.</p></div>
+        <div class="the an"><h3>Champions League</h3><p>5 lần vô địch cùng Man United (2008) và Real Madrid (2014, 2016, 2017, 2018).</p></div>
+        <div class="the an"><h3>EURO 2016</h3><p>Cùng Bồ Đào Nha lần đầu vô địch châu Âu.</p></div>
+        <div class="the an"><h3>UEFA Nations League</h3><p>Vô địch cùng Bồ Đào Nha năm 2019 và 2025.</p></div>
+      </div>
+    </section>
+
+    <!-- ===== BẢNG VÀNG THÀNH VIÊN ===== -->
+    <section id="thanh-vien">
+      <h2 class="tieu-de an">Bảng vàng thành viên</h2>
+      <p class="mo-ta an">Thứ hạng dựa vào số năm hâm mộ CR7: từ 15 năm là Huyền thoại, 10 năm là Kì cựu, 5 năm là Classic, còn lại là Tân binh. Bấm vào thẻ để lật xem khoảnh khắc nhớ nhất.</p>
+
+      <div class="thong-ke-tv an">
+        <div><strong id="tong-tv">0</strong><span>Tổng thành viên</span></div>
+        <div><strong id="cuu-tv">0</strong><span>Huyền thoại và Kì cựu</span></div>
+      </div>
+
+      <div class="tab-nut an" id="loc-hang" role="tablist"></div>
+      <div class="luoi-tv" id="luoi-tv"></div>
+    </section>
+
+    <!-- ===== ĐỐ VUI ===== -->
+    <section id="do-vui" style="background: var(--nen-2);">
+      <h2 class="tieu-de an" style="text-align:center;">Đố vui CR7</h2>
+      <p class="mo-ta an" style="margin-left:auto; margin-right:auto; text-align:center;">5 câu hỏi, xem bạn là fan cỡ nào.</p>
+      <div class="quiz an" id="quiz"></div>
+    </section>
+
+    <!-- ===== ĐĂNG KÝ ===== -->
+    <section class="dang-ky" id="tham-gia">
+      <h2 class="tieu-de an">Trở thành thành viên</h2>
+      <p class="mo-ta an" style="margin-left:auto; margin-right:auto;">Nhập tên và năm bạn bắt đầu hâm mộ để nhận thẻ thành viên.</p>
+      <form id="form-dang-ky">
+        <input type="text" id="ten-fan" placeholder="Tên của bạn" maxlength="20" required>
+        <select id="nam-ham-mo" aria-label="Năm bắt đầu hâm mộ"></select>
+        <button class="nut" type="submit">Nhận thẻ</button>
+      </form>
+      <p class="thong-bao" id="thong-bao" role="status"></p>
+
+      <div class="the-vip" id="the-vip">
+        <div class="logo-the">CR7 FAN CLUB</div>
+        <div class="ten-the" id="vip-ten"></div>
+        <span class="hang-the" id="vip-hang"></span>
+        <div class="chan-the"><span id="vip-nam"></span><span id="vip-so"></span></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    Trang web fan do học sinh thực hiện, không phải trang chính thức của Cristiano Ronaldo.
+  </footer>
+
+  <!-- Nút nổi -->
+  <button id="siuu" aria-label="Siuuu">SIUUU!</button>
+  <button id="len-dau" aria-label="Lên đầu trang">↑</button>
+
+  <!-- Khung xem ảnh phóng to -->
+  <div class="lightbox" id="lightbox">
+    <button class="lb-dong" id="dong-lightbox" aria-label="Đóng">×</button>
+    <button class="lb-truoc" id="lb-truoc" aria-label="Ảnh trước">‹</button>
+    <button class="lb-sau" id="lb-sau" aria-label="Ảnh sau">›</button>
+    <div>
+      <img id="anh-lon" src="" alt="">
+      <p id="chu-thich"></p>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================
+       PHẦN JAVASCRIPT - mỗi khối làm một hiệu ứng riêng.
+       Muốn sửa nội dung: tìm các mảng dữ liệu (CLB, THANH_VIEN, CAU_HOI)
+       ===================================================== */
+
+    const NAM_NAY = new Date().getFullYear();
+    const GIAM_CHUYEN_DONG = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const $ = function (id) { return document.getElementById(id); };
+
+    // Hàm nhỏ để tạo một thẻ HTML (dùng textContent nên an toàn với tên người dùng nhập)
+    function tao(thanh, lop, chu) {
+      const el = document.createElement(thanh);
+      if (lop) el.className = lop;
+      if (chu !== undefined) el.textContent = chu;
+      return el;
+    }
+
+    // --- 1. Màn hình chờ ---
+    window.addEventListener("load", function () {
+      setTimeout(function () { $("loader").classList.add("xong"); }, 1800);
+    });
+
+    // --- 2. Thanh tiến độ, menu đổi nền, nút lên đầu trang ---
+    const menu = $("menu");
+    const nutLenDau = $("len-dau");
+    const thanhTienDo = $("tien-do");
+    window.addEventListener("scroll", function () {
+      const tong = document.documentElement.scrollHeight - window.innerHeight;
+      thanhTienDo.style.transform = "scaleX(" + (tong > 0 ? window.scrollY / tong : 0) + ")";
+      menu.classList.toggle("cuon", window.scrollY > 50);
+      nutLenDau.classList.toggle("hien", window.scrollY > 600);
+    });
+    nutLenDau.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+
+    // --- 3. Menu trên điện thoại ---
+    const dieuHuong = $("dieu-huong");
+    $("nut-menu").addEventListener("click", function () { dieuHuong.classList.toggle("mo"); });
+    dieuHuong.querySelectorAll("a").forEach(function (a) {
+      a.addEventListener("click", function () { dieuHuong.classList.remove("mo"); });
+    });
+
+    // --- 4. Ánh sáng vàng đi theo con trỏ chuột ---
+    const sang = $("sang");
+    document.addEventListener("mousemove", function (e) {
+      sang.style.transform = "translate(" + (e.clientX - 180) + "px," + (e.clientY - 180) + "px)";
+    });
+
+    // --- 5. Hiệu ứng gõ chữ ở hero ---
+    const cauNoi = [
+      "Siuuu! Chào mừng đến với cộng đồng fan CR7.",
+      "Không có tài năng nào thay thế được sự chăm chỉ.",
+      "Hãy cùng nhau cổ vũ huyền thoại số 7!"
+    ];
+    const oChu = $("go-chu");
+    let cau = 0, kyTu = 0, dangXoa = false;
+    function goChu() {
+      const hienTai = cauNoi[cau];
+      oChu.textContent = hienTai.slice(0, kyTu);
+      if (!dangXoa && kyTu < hienTai.length) { kyTu++; setTimeout(goChu, 55); }
+      else if (!dangXoa) { dangXoa = true; setTimeout(goChu, 1600); }
+      else if (kyTu > 0) { kyTu--; setTimeout(goChu, 25); }
+      else { dangXoa = false; cau = (cau + 1) % cauNoi.length; setTimeout(goChu, 300); }
+    }
+    goChu();
+
+    // --- 6. Hero: số 7 và vòng tròn di chuyển theo chuột (parallax) ---
+    const hero = $("dau-trang");
+    hero.addEventListener("mousemove", function (e) {
+      if (GIAM_CHUYEN_DONG) return;
+      const r = hero.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      $("tang-7").style.setProperty("--px", (x * -50) + "px");
+      $("tang-7").style.setProperty("--py", (y * -50) + "px");
+      $("tang-vong").style.setProperty("--px", (x * 30) + "px");
+      $("tang-vong").style.setProperty("--py", (y * 30) + "px");
+    });
+
+    // --- 7. Hero: tàn lửa bay lên (canvas) ---
+    (function () {
+      if (GIAM_CHUYEN_DONG) return;
+      const canvas = $("hat");
+      const ctx = canvas.getContext("2d");
+      let W = 0, H = 0, dangChay = true;
+      const hat = [];
+
+      function chinhKichThuoc() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
+      function taoHat(batDauNgauNhien) {
+        return {
+          x: Math.random() * W,
+          y: batDauNgauNhien ? Math.random() * H : H + 10,
+          r: 1 + Math.random() * 2.6,
+          v: 0.4 + Math.random() * 1.3,
+          lech: (Math.random() - 0.5) * 0.7,
+          sang: 0.3 + Math.random() * 0.7,
+          mau: Math.random() < 0.6 ? "244,180,0" : "230,60,50"
+        };
+      }
+      chinhKichThuoc();
+      window.addEventListener("resize", chinhKichThuoc);
+      for (let i = 0; i < 80; i++) hat.push(taoHat(true));
+
+      function ve() {
+        if (dangChay) {
+          ctx.clearRect(0, 0, W, H);
+          hat.forEach(function (h, i) {
+            h.y -= h.v; h.x += h.lech + Math.sin(h.y / 40) * 0.3;
+            if (h.y < -10) hat[i] = taoHat(false);
+            ctx.beginPath();
+            ctx.fillStyle = "rgba(" + h.mau + "," + h.sang + ")";
+            ctx.shadowColor = "rgba(" + h.mau + ",0.9)";
+            ctx.shadowBlur = 10;
+            ctx.arc(h.x, h.y, h.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+        requestAnimationFrame(ve);
+      }
+      ve();
+      // Tạm dừng khi hero ra khỏi màn hình để máy đỡ nặng
+      new IntersectionObserver(function (ds) { dangChay = ds[0].isIntersecting; }).observe(hero);
+    })();
+
+    // --- 8. Pháo hoa giấy (confetti) + nút SIUUU ---
+    const canvasHoa = $("hoa");
+    const ctxHoa = canvasHoa.getContext("2d");
+    let manhGiay = [], hoaDangChay = false;
+    const MAU_GIAY = ["#f4b400", "#b3131b", "#ffffff", "#0c8f5f", "#ff5a36"];
+
+    function chinhHoa() { canvasHoa.width = window.innerWidth; canvasHoa.height = window.innerHeight; }
+    chinhHoa();
+    window.addEventListener("resize", chinhHoa);
+
+    function boom(x, y, soLuong) {
+      if (GIAM_CHUYEN_DONG) return;
+      for (let i = 0; i < (soLuong || 140); i++) {
+        manhGiay.push({
+          x: x, y: y,
+          vx: (Math.random() - 0.5) * 16, vy: Math.random() * -15 - 4,
+          to: 6 + Math.random() * 7, goc: Math.random() * 6.28, quay: (Math.random() - 0.5) * 0.4,
+          mau: MAU_GIAY[Math.floor(Math.random() * MAU_GIAY.length)]
+        });
+      }
+      if (!hoaDangChay) { hoaDangChay = true; requestAnimationFrame(veHoa); }
+    }
+    function veHoa() {
+      ctxHoa.clearRect(0, 0, canvasHoa.width, canvasHoa.height);
+      manhGiay = manhGiay.filter(function (g) { return g.y < canvasHoa.height + 30; });
+      manhGiay.forEach(function (g) {
+        g.vy += 0.35; g.vx *= 0.99; g.x += g.vx; g.y += g.vy; g.goc += g.quay;
+        ctxHoa.save();
+        ctxHoa.translate(g.x, g.y); ctxHoa.rotate(g.goc);
+        ctxHoa.fillStyle = g.mau;
+        ctxHoa.fillRect(-g.to / 2, -g.to / 4, g.to, g.to / 2);
+        ctxHoa.restore();
+      });
+      if (manhGiay.length > 0) requestAnimationFrame(veHoa);
+      else hoaDangChay = false;
+    }
+
+    function siuuu() {
+      boom(window.innerWidth * 0.3, window.innerHeight * 0.7, 120);
+      boom(window.innerWidth * 0.7, window.innerHeight * 0.7, 120);
+      if (GIAM_CHUYEN_DONG) return;
+      const chu = $("chu-siuu"), noiDung = $("noi-dung");
+      chu.classList.remove("no"); noiDung.classList.remove("rung");
+      void chu.offsetWidth;                       // ép trình duyệt chạy lại hiệu ứng
+      chu.classList.add("no"); noiDung.classList.add("rung");
+    }
+    $("siuu").addEventListener("click", siuuu);
+
+    // --- 9. Chạy số + hiện dần khi cuộn tới ---
+    function chaySo(phanTu) {
+      const dich = Number(phanTu.dataset.dich);
+      const hauTo = phanTu.dataset.hauTo || "";
+      const batDau = performance.now();
+      function buoc(bayGio) {
+        const tiLe = Math.min((bayGio - batDau) / 1800, 1);
+        phanTu.textContent = Math.round(dich * tiLe) + (tiLe === 1 ? hauTo : "");
+        if (tiLe < 1) requestAnimationFrame(buoc);
+      }
+      requestAnimationFrame(buoc);
+    }
+    const quanSat = new IntersectionObserver(function (danhSach) {
+      danhSach.forEach(function (muc) {
+        if (!muc.isIntersecting) return;
+        const el = muc.target;
+        el.classList.add("hien-ra");
+        const so = el.querySelector("[data-dich]");
+        if (so) chaySo(so);
+        quanSat.unobserve(el);
+        // Sau khi hiện xong thì gỡ các class hiệu ứng để hover hoạt động bình thường
+        setTimeout(function () {
+          el.classList.remove("an", "an-trai", "an-phai", "hien-ra");
+        }, 1000);
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll(".an, .an-trai, .an-phai").forEach(function (el) { quanSat.observe(el); });
+
+    // --- 10. Ảnh bị thiếu thì hiện khung màu + dòng nhắc ---
+    function theoDoiAnh(img) {
+      function thieu() { img.parentElement.classList.add("thieu"); }
+      img.addEventListener("error", thieu);
+      img.addEventListener("load", function () { img.parentElement.classList.remove("thieu"); });
+      if (img.complete && img.naturalWidth === 0 && img.getAttribute("src")) thieu();
+    }
+    document.querySelectorAll(".khung-anh img").forEach(theoDoiAnh);
+
+    // --- 11. Hồ sơ từng CLB (tab) ---
+    // so: số trận và số bàn. null nghĩa là chưa có số liệu cố định (đội còn đang thi đấu)
+    const CLB = [
+      { id: "anh1", ten: "Manchester United", nam: "2003 – 2009 và 2021 – 2022", mau: "#e5333d",
+        mota: "Nơi Ronaldo từ cầu thủ trẻ trở thành siêu sao thế giới, rồi trở lại năm 2021 và tiếp tục ghi bàn.",
+        danhHieu: "3 chức vô địch Premier League, Champions League 2008 và Quả bóng vàng 2008.",
+        so: { tran: 346, ban: 145 } },
+      { id: "anh2", ten: "Real Madrid", nam: "2009 – 2018", mau: "#f3efe6",
+        mota: "Chín năm ở Bernabéu, nơi anh trở thành chân sút vĩ đại nhất lịch sử câu lạc bộ.",
+        danhHieu: "4 chức vô địch Champions League, 2 chức vô địch La Liga và 4 Quả bóng vàng.",
+        so: { tran: 438, ban: 450 } },
+      { id: "anh3", ten: "Juventus", nam: "2018 – 2021", mau: "#cfd6d2",
+        mota: "Thử thách mới ở Italy, anh tiếp tục ghi bàn đều đặn ở một giải đấu nổi tiếng với hàng thủ chắc chắn.",
+        danhHieu: "2 chức vô địch Serie A, 1 Coppa Italia và Vua phá lưới Serie A mùa 2020–21.",
+        so: { tran: 134, ban: 101 } },
+      { id: "anh4", ten: "Al Nassr", nam: "2023 – nay", mau: "#f4b400",
+        mota: "Ronaldo gia nhập đầu năm 2023 và trở thành gương mặt của bóng đá Saudi Arabia.",
+        danhHieu: "Cùng Al Nassr vô địch Arab Club Champions Cup 2023. Số liệu thay đổi theo từng trận nên bạn hãy tự cập nhật khi cần.",
+        so: null }
+    ];
+    const MAX_TRAN = 438, MAX_BAN = 450, MAX_TILE = 1.03;     // dùng để tính độ dài thanh
+    const tabNut = $("tab-nut");
+    const tabNoiDung = $("tab-noi-dung");
+
+    function hienClb(i) {
+      const c = CLB[i];
+      tabNut.querySelectorAll("button").forEach(function (b, j) { b.setAttribute("aria-selected", j === i ? "true" : "false"); });
+      tabNut.style.setProperty("--mau-tab", c.mau);
+
+      // Lấy ảnh từ thư viện ảnh (cùng data-id)
+      const goc = document.querySelector('#luoi-anh [data-id="' + c.id + '"] img');
+      const anh = $("tab-anh");
+      $("tab-khung").classList.remove("thieu");
+      anh.src = goc.getAttribute("src");
+      anh.alt = goc.alt;
+      anh.style.objectPosition = goc.style.objectPosition;
+
+      $("tab-ten").textContent = c.ten;
+      $("tab-nam").textContent = c.nam;
+      $("tab-mota").textContent = c.mota;
+      $("tab-danh-hieu").textContent = c.danhHieu;
+
+      const khungSo = $("tab-so");
+      khungSo.innerHTML = "";
+      if (c.so) {
+        const tile = c.so.ban / c.so.tran;
+        [["Số trận", c.so.tran, c.so.tran / MAX_TRAN], ["Số bàn", c.so.ban, c.so.ban / MAX_BAN], ["Bàn mỗi trận", tile.toFixed(2), tile / MAX_TILE]].forEach(function (d) {
+          const cot = tao("div", "cot");
+          const tren = tao("div", "cot-tren");
+          tren.appendChild(tao("span", "", d[0]));
+          tren.appendChild(tao("b", "", String(d[1])));
+          const nen = tao("div", "cot-nen");
+          const thanh = tao("i");
+          thanh.dataset.w = Math.round(d[2] * 100);
+          nen.appendChild(thanh); cot.appendChild(tren); cot.appendChild(nen);
+          khungSo.appendChild(cot);
+        });
+        // Đợi 2 khung hình rồi mới đặt độ rộng để thanh chạy ra có animation
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            khungSo.querySelectorAll("i").forEach(function (t) { t.style.width = t.dataset.w + "%"; });
+          });
+        });
+      }
+      tabNoiDung.classList.remove("doi");
+      void tabNoiDung.offsetWidth;
+      tabNoiDung.classList.add("doi");
+    }
+    CLB.forEach(function (c, i) {
+      const b = tao("button", "", c.ten);
+      b.setAttribute("role", "tab");
+      b.addEventListener("click", function () { hienClb(i); });
+      tabNut.appendChild(b);
+    });
+    theoDoiAnh($("tab-anh"));
+    hienClb(0);
+
+    // --- 12. Khoảnh khắc: kéo chuột để cuộn ngang ---
+    (function () {
+      const bang = $("bang-khoanh-khac");
+      let dangKeo = false, xBatDau = 0, cuonBatDau = 0;
+      bang.addEventListener("mousedown", function (e) {
+        dangKeo = true; xBatDau = e.pageX; cuonBatDau = bang.scrollLeft; bang.classList.add("keo");
+      });
+      window.addEventListener("mouseup", function () { dangKeo = false; bang.classList.remove("keo"); });
+      window.addEventListener("mousemove", function (e) {
+        if (!dangKeo) return;
+        bang.scrollLeft = cuonBatDau - (e.pageX - xBatDau);
+      });
+    })();
+
+    // --- 13. Lightbox có nút trước/sau ---
+    const anhGallery = Array.from(document.querySelectorAll("#luoi-anh .khung-anh"));
+    const lightbox = $("lightbox");
+    let chiSoAnh = 0;
+    function moAnh(i) {
+      chiSoAnh = (i + anhGallery.length) % anhGallery.length;   // vòng tròn: hết ảnh cuối quay về ảnh đầu
+      const img = anhGallery[chiSoAnh].querySelector("img");
+      const cap = anhGallery[chiSoAnh].querySelector("figcaption");
+      $("anh-lon").src = img.src;
+      $("anh-lon").alt = img.alt;
+      $("chu-thich").textContent = cap ? cap.textContent : "";
+      lightbox.classList.add("mo");
+    }
+    anhGallery.forEach(function (khung, i) { khung.addEventListener("click", function () { moAnh(i); }); });
+    function dongLightbox() { lightbox.classList.remove("mo"); }
+    $("dong-lightbox").addEventListener("click", dongLightbox);
+    $("lb-truoc").addEventListener("click", function () { moAnh(chiSoAnh - 1); });
+    $("lb-sau").addEventListener("click", function () { moAnh(chiSoAnh + 1); });
+    lightbox.addEventListener("click", function (e) { if (e.target === lightbox) dongLightbox(); });
+    document.addEventListener("keydown", function (e) {
+      if (!lightbox.classList.contains("mo")) return;
+      if (e.key === "Escape") dongLightbox();
+      if (e.key === "ArrowLeft") moAnh(chiSoAnh - 1);
+      if (e.key === "ArrowRight") moAnh(chiSoAnh + 1);
+    });
+
+    // --- 14. Bảng vàng thành viên ---
+    // Đây là danh sách MẪU. Hãy đổi thành tên và biệt danh thật của thành viên câu lạc bộ.
+    // tu: năm bắt đầu hâm mộ Ronaldo
+    const THANH_VIEN = [
+      { ten: "Minh Quân",  bietDanh: "Quân Siuuu",   tu: 2005, cau: "Xem chung kết Moscow 2008 là mê CR7 luôn từ đó." },
+      { ten: "Thanh Hải",  bietDanh: "Hải Bicycle",  tu: 2008, cau: "Cú xe đạp chổng ngược vào lưới Juventus là bàn đẹp nhất tôi từng xem." },
+      { ten: "Ngọc Lan",   bietDanh: "Lan Madrid",   tu: 2010, cau: "Đêm Lisbon 2014, cả nhóm thức trắng cổ vũ." },
+      { ten: "Anh Tuấn",   bietDanh: "Tuấn Penalty", tu: 2012, cau: "Mỗi lần Ronaldo đá phạt là cả xóm nín thở." },
+      { ten: "Thu Trang",  bietDanh: "Trang Số 7",   tu: 2013, cau: "Mua chiếc áo số 7 đầu tiên bằng tiền tiết kiệm cả học kì." },
+      { ten: "Văn Đức",    bietDanh: "Đức Đá Phạt",  tu: 2015, cau: "EURO 2016 là mùa hè đáng nhớ nhất của tôi." },
+      { ten: "Bảo Mai",    bietDanh: "Mai Hat-trick", tu: 2016, cau: "Hat-trick vào lưới Tây Ban Nha năm 2018 làm tôi hét khản cổ." },
+      { ten: "Đăng Khoa",  bietDanh: "Khoa Juve",    tu: 2017, cau: "Từ ngày Ronaldo sang Italy tôi mới bắt đầu xem Serie A." },
+      { ten: "Khánh Vy",   bietDanh: "Vy CR7",       tu: 2019, cau: "Xem clip Ronaldo tập luyện là có động lực học bài." },
+      { ten: "Hoàng Nam",  bietDanh: "Nam Al Nassr", tu: 2021, cau: "Anh ấy vẫn ghi bàn ở tuổi này, thật phi thường." },
+      { ten: "Gia Phúc",   bietDanh: "Phúc Siuuu",   tu: 2024, cau: "Mới mê nhưng đã thuộc hết bàn thắng thứ 900." },
+      { ten: "Hà My",      bietDanh: "My Bay Cao",   tu: 2025, cau: "Mê nhất cú bật nhảy đánh đầu." }
+    ];
+    const HANG = [
+      { ma: "huyen-thoai", ten: "Huyền thoại", mau: "#f4b400", tuNam: 15 },
+      { ma: "ki-cuu",      ten: "Kì cựu",      mau: "#ff5a4f", tuNam: 10 },
+      { ma: "classic",     ten: "Classic",     mau: "#cfd6d2", tuNam: 5 },
+      { ma: "tan-binh",    ten: "Tân binh",    mau: "#2fbf8a", tuNam: 0 }
+    ];
+    function hangTheoNam(tu) {
+      const soNam = NAM_NAY - tu;
+      return HANG.find(function (h) { return soNam >= h.tuNam; });
+    }
+    function soThuTu(n) { return String(n).padStart(3, "0"); }
+
+    // Đọc thành viên mới đã đăng ký trước đó (lưu trong trình duyệt)
+    const KHOA_LUU = "cr7-fan-v2";
+    try {
+      (JSON.parse(localStorage.getItem(KHOA_LUU)) || []).forEach(function (m) {
+        THANH_VIEN.push({ ten: m.ten, bietDanh: "Fan mới", tu: m.tu, cau: "" });
+      });
+    } catch (e) {}
+
+    let boLoc = "tat-ca";
+    const luoiTv = $("luoi-tv");
+
+    function gan3D(the, matTruoc) {
+      // Hiệu ứng nghiêng 3D + vệt sáng đi theo chuột
+      the.addEventListener("mousemove", function (e) {
+        if (GIAM_CHUYEN_DONG) return;
+        const r = the.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+        the.style.transform = "rotateX(" + ((0.5 - y) * 16) + "deg) rotateY(" + ((x - 0.5) * 16) + "deg)";
+        the.style.setProperty("--sx", (x * 100) + "%");
+        the.style.setProperty("--sy", (y * 100) + "%");
+      });
+      the.addEventListener("mouseleave", function () { the.style.transform = ""; });
+    }
+
+    function veThanhVien() {
+      luoiTv.innerHTML = "";
+      let dem = 0;
+      THANH_VIEN.forEach(function (m, i) {
+        const hang = hangTheoNam(m.tu);
+        if (boLoc !== "tat-ca" && hang.ma !== boLoc) return;
+
+        const the = tao("div", "the-tv");
+        the.style.setProperty("--mau", hang.mau);
+        the.style.setProperty("--d", (dem * 0.06) + "s");
+        the.tabIndex = 0;
+        the.setAttribute("role", "button");
+        the.setAttribute("aria-label", "Thẻ thành viên " + m.ten + ", bấm để lật");
+        dem++;
+
+        const trong = tao("div", "ben-trong");
+
+        // Mặt trước
+        const truoc = tao("div", "mat mat-truoc");
+        truoc.appendChild(tao("span", "so-tv", "#" + soThuTu(i + 1)));
+        truoc.appendChild(tao("span", "huy-hieu", hang.ten));
+        const chuCai = m.ten.trim().split(" ").pop().charAt(0).toUpperCase();
+        truoc.appendChild(tao("div", "anh-dai-dien", chuCai));
+        truoc.appendChild(tao("h3", "", m.ten));
+        truoc.appendChild(tao("div", "biet-danh", m.bietDanh));
+        const soNam = NAM_NAY - m.tu;
+        truoc.appendChild(tao("div", "nam-tv", "Hâm mộ từ " + m.tu + (soNam > 0 ? " • " + soNam + " năm" : " • mới bắt đầu")));
+        const cuong = Math.min(100, 55 + soNam * 3);
+        const cot = tao("div", "cot");
+        const tren = tao("div", "cot-tren");
+        tren.appendChild(tao("span", "", "Độ cuồng nhiệt"));
+        tren.appendChild(tao("b", "", cuong + "%"));
+        const nen = tao("div", "cot-nen");
+        const thanh = tao("i");
+        thanh.style.width = cuong + "%";
+        nen.appendChild(thanh); cot.appendChild(tren); cot.appendChild(nen);
+        truoc.appendChild(cot);
+
+        // Mặt sau
+        const sau = tao("div", "mat mat-sau");
+        sau.appendChild(tao("h4", "", "Khoảnh khắc nhớ nhất"));
+        sau.appendChild(tao("p", "", m.cau ? "\u201C" + m.cau + "\u201D" : "Đang viết câu chuyện của riêng mình."));
+        sau.appendChild(tao("small", "", "Bấm để lật lại"));
+
+        trong.appendChild(truoc); trong.appendChild(sau); the.appendChild(trong);
+
+        function lat() { the.classList.toggle("lat"); }
+        the.addEventListener("click", lat);
+        the.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); lat(); }
+        });
+        gan3D(the);
+        luoiTv.appendChild(the);
+      });
+
+      $("tong-tv").textContent = THANH_VIEN.length;
+      $("cuu-tv").textContent = THANH_VIEN.filter(function (m) {
+        const ma = hangTheoNam(m.tu).ma; return ma === "huyen-thoai" || ma === "ki-cuu";
+      }).length;
+    }
+
+    // Nút lọc theo hạng
+    const locHang = $("loc-hang");
+    [{ ma: "tat-ca", ten: "Tất cả", mau: "#f4b400" }].concat(HANG).forEach(function (h) {
+      const b = tao("button", "", h.ten);
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", h.ma === "tat-ca" ? "true" : "false");
+      b.addEventListener("click", function () {
+        boLoc = h.ma;
+        locHang.style.setProperty("--mau-tab", h.mau);
+        locHang.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+        veThanhVien();
+      });
+      locHang.appendChild(b);
+    });
+    veThanhVien();
+
+    // --- 15. Đố vui ---
+    const CAU_HOI = [
+      { h: "Cristiano Ronaldo sinh năm nào?", d: ["1983", "1985", "1987", "1990"], dung: 1,
+        g: "Anh sinh ngày 5/2/1985 tại Funchal, đảo Madeira." },
+      { h: "Ronaldo đã giành bao nhiêu Quả bóng vàng?", d: ["3", "4", "5", "6"], dung: 2,
+        g: "5 lần: 2008, 2013, 2014, 2016 và 2017." },
+      { h: "Ở chung kết EURO 2016, Bồ Đào Nha thắng đội nào?", d: ["Tây Ban Nha", "Đức", "Italy", "Pháp"], dung: 3,
+        g: "Bồ Đào Nha thắng Pháp 1-0 sau hiệp phụ." },
+      { h: "Ronaldo ra mắt đội một ở câu lạc bộ nào trước khi sang Anh?", d: ["Porto", "Sporting CP", "Benfica", "Braga"], dung: 1,
+        g: "Anh ra mắt Sporting CP năm 2002 rồi sang Manchester United năm 2003." },
+      { h: "Ronaldo ghi bao nhiêu bàn cho Real Madrid (trong 438 trận)?", d: ["250", "350", "450", "550"], dung: 2,
+        g: "Anh ghi 450 bàn, kỉ lục của câu lạc bộ." }
+    ];
+    const quiz = $("quiz");
+    let viTri = 0, diem = 0;
+
+    function veCauHoi() {
+      quiz.innerHTML = "";
+      const c = CAU_HOI[viTri];
+      quiz.appendChild(tao("div", "quiz-dem", "Câu " + (viTri + 1) + " / " + CAU_HOI.length));
+      quiz.appendChild(tao("h3", "", c.h));
+      const giaiThich = tao("p", "giai-thich");
+      const nutTiep = tao("button", "nut", viTri === CAU_HOI.length - 1 ? "Xem kết quả" : "Câu tiếp theo");
+      nutTiep.style.display = "none";
+      const cacNut = [];
+
+      c.d.forEach(function (chu, j) {
+        const b = tao("button", "dap-an", chu);
+        b.addEventListener("click", function () {
+          cacNut.forEach(function (x) { x.disabled = true; });
+          if (j === c.dung) { b.classList.add("dung"); diem++; }
+          else { b.classList.add("sai"); cacNut[c.dung].classList.add("dung"); }
+          giaiThich.textContent = c.g;
+          nutTiep.style.display = "inline-block";
+        });
+        cacNut.push(b);
+        quiz.appendChild(b);
+      });
+      quiz.appendChild(giaiThich);
+      quiz.appendChild(nutTiep);
+      nutTiep.addEventListener("click", function () {
+        viTri++;
+        if (viTri < CAU_HOI.length) veCauHoi(); else veKetQua();
+      });
+    }
+    function veKetQua() {
+      quiz.innerHTML = "";
+      const kq = tao("div", "ket-qua");
+      kq.appendChild(tao("strong", "", diem + " / " + CAU_HOI.length));
+      let loi = "Cố lên, xem lại các khoảnh khắc ở trên rồi thử lại nhé!";
+      if (diem >= 4) loi = "Fan cứng thực sự! Siuuu!";
+      else if (diem >= 3) loi = "Khá lắm, bạn khá hiểu về CR7.";
+      kq.appendChild(tao("p", "giai-thich", loi));
+      const lai = tao("button", "nut", "Chơi lại");
+      lai.addEventListener("click", function () { viTri = 0; diem = 0; veCauHoi(); });
+      kq.appendChild(lai);
+      quiz.appendChild(kq);
+      if (diem >= 4) siuuu();
+    }
+    veCauHoi();
+
+    // --- 16. Đăng ký thành viên + thẻ thành viên ---
+    const form = $("form-dang-ky");
+    const oTen = $("ten-fan");
+    const oNam = $("nam-ham-mo");
+    const thongBao = $("thong-bao");
+    for (let n = NAM_NAY; n >= 2003; n--) {
+      const o = document.createElement("option");
+      o.value = n; o.textContent = "Hâm mộ từ " + n;
+      if (n === NAM_NAY - 5) o.selected = true;
+      oNam.appendChild(o);
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();                                  // không cho trang tải lại
+      const ten = oTen.value.trim();
+      const tu = Number(oNam.value);
+      if (ten === "") { thongBao.textContent = "Bạn chưa nhập tên."; return; }
+      if (THANH_VIEN.some(function (m) { return m.ten.toLowerCase() === ten.toLowerCase(); })) {
+        thongBao.textContent = "Tên này đã có trong bảng vàng, hãy thêm họ hoặc biệt danh."; return;
+      }
+
+      THANH_VIEN.push({ ten: ten, bietDanh: "Fan mới", tu: tu, cau: "" });
+      try {
+        const daLuu = JSON.parse(localStorage.getItem(KHOA_LUU)) || [];
+        daLuu.push({ ten: ten, tu: tu });
+        localStorage.setItem(KHOA_LUU, JSON.stringify(daLuu));
+      } catch (err) {}
+      veThanhVien();
+
+      const hang = hangTheoNam(tu);
+      const the = $("the-vip");
+      the.style.setProperty("--mau", hang.mau === "#cfd6d2" ? "#7d8a84" : hang.mau);
+      $("vip-ten").textContent = ten;
+      $("vip-hang").textContent = hang.ten;
+      $("vip-nam").textContent = "Hâm mộ từ " + tu;
+      $("vip-so").textContent = "CR7-" + soThuTu(THANH_VIEN.length);
+      the.classList.remove("hien-the"); void the.offsetWidth; the.classList.add("hien-the");
+
+      thongBao.textContent = "Chào mừng " + ten + "! Bạn là thành viên thứ " + THANH_VIEN.length + " với hạng " + hang.ten + ".";
+      const r = the.getBoundingClientRect();
+      boom(r.left + r.width / 2, r.top + r.height / 2, 160);
+      form.reset();
+      oNam.value = NAM_NAY - 5;
+    });
+
+    // Thẻ thành viên cũng nghiêng 3D khi rê chuột
+    gan3D($("the-vip"));
+  </script>
+</body>
+</html>
